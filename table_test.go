@@ -2,6 +2,7 @@ package typoless
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 )
 
@@ -33,14 +34,73 @@ func TestTableName(t *testing.T) {
 			}(),
 			want: "xs as lhs JOIN ys as rhs ON lhs.id = rhs.x_id",
 		},
+		{
+			input: func() tablelike {
+				xTable := struct {
+					Table
+					ID Int64Field
+				}{
+					Table: Table("xs"),
+					ID:    Int64Field("id"),
+				}
+				yTable := struct {
+					Table
+					ID  Int64Field
+					XID Int64Field
+				}{
+					Table: Table("ys"),
+					ID:    Int64Field("id"),
+					XID:   Int64Field("x_id"),
+				}
+
+				lhs := xTable // copy
+				Alias(&lhs, &xTable, "lhs")
+				rhs := yTable // copy
+				Alias(&rhs, &yTable, "rhs")
+				return lhs.Join(rhs, On(lhs.ID, rhs.XID))
+			}(),
+			want: "xs as lhs JOIN ys as rhs ON lhs.id=rhs.x_id",
+		},
+		{
+			input: func() tablelike {
+				people := struct {
+					Table
+					ID       Int64Field
+					FatherID Int64Field
+					MotherID Int64Field
+				}{
+					Table:    Table("people"),
+					ID:       Int64Field("id"),
+					FatherID: Int64Field("father_id"),
+					MotherID: Int64Field("mother_id"),
+				}
+
+				p := people // copy
+				Alias(&p, &people, "p")
+				father := people // copy
+				Alias(&father, &people, "father")
+				mother := people // copy
+				Alias(&mother, &people, "mother")
+
+				return p.
+					Join(father, On(p.FatherID, father.ID)).
+					Join(mother, On(p.MotherID, mother.ID))
+			}(),
+			want: `
+people as p
+ JOIN people as father ON p.father_id=father.id
+ JOIN people as mother ON p.mother_id=mother.id
+`,
+		},
 	}
 
 	for i, c := range cases {
 		c := c
 		t.Run(fmt.Sprintf("case:%d", i), func(t *testing.T) {
-			got := c.input.TableName()
-			if c.want != got {
-				t.Errorf("\nwant\n\t%v\nbut\n\t%s", c.want, got)
+			got := strings.ReplaceAll(c.input.TableName(), "\n", "")
+			want := strings.ReplaceAll(c.want, "\n", "")
+			if want != got {
+				t.Errorf("\nwant\n\t%v\nbut\n\t%s", want, got)
 			}
 		})
 	}

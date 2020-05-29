@@ -43,16 +43,16 @@ func (t JoinedTable) TableName() string {
 	)
 }
 func (t JoinedTable) Join(rhs tablelike, on string) JoinedTable {
-	return JoinedTable{lhs: t, rhs: rhs, joiner: "JOIN"}
+	return JoinedTable{lhs: t, rhs: rhs, on: on, joiner: "JOIN"}
 }
 func (t JoinedTable) LeftOuterJoin(rhs tablelike, on string) JoinedTable {
-	return JoinedTable{lhs: t, rhs: rhs, joiner: "LEFT OUTER JOIN"}
+	return JoinedTable{lhs: t, rhs: rhs, on: on, joiner: "LEFT OUTER JOIN"}
 }
 func (t JoinedTable) RightOuterJoin(rhs tablelike, on string) JoinedTable {
-	return JoinedTable{lhs: t, rhs: rhs, joiner: "RIGHT OUTER JOIN"}
+	return JoinedTable{lhs: t, rhs: rhs, on: on, joiner: "RIGHT OUTER JOIN"}
 }
 func (t JoinedTable) FullOuterJoin(rhs tablelike, on string) JoinedTable {
-	return JoinedTable{lhs: t, rhs: rhs, joiner: "FULL OUTER JOIN"}
+	return JoinedTable{lhs: t, rhs: rhs, on: on, joiner: "FULL OUTER JOIN"}
 }
 
 func On(lhs, rhs Field) string {
