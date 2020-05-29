@@ -159,14 +159,3 @@ func (*Bop) op()           {}
 func (*Mop) op()           {}
 func (Literal) op()        {} // xxx
 func (*LiteralFormat) op() {} // xxx
-
-// concrete
-func And(values ...interface{}) *Mop {
-	return &Mop{Op: "AND", Values: values}
-}
-func Or(values ...interface{}) *Mop {
-	return &Mop{Op: "OR", Values: values}
-}
-func Not(value interface{}) *Uop {
-	return &Uop{Op: "NOT", Value: value}
-}
