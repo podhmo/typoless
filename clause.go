@@ -24,7 +24,7 @@ func (q *SelectClause) String() string {
 	return fmt.Sprintf("%s %s", q.Prefix, strings.Join(names, ", "))
 }
 
-func From(table tableLike) *FromClause {
+func From(table tablelike) *FromClause {
 	return &FromClause{
 		Prefix: "FROM",
 		Table:  table,
@@ -35,7 +35,7 @@ func From(table tableLike) *FromClause {
 
 type FromClause struct {
 	Prefix string
-	Table  tableLike
+	Table  tablelike
 }
 
 func (q *FromClause) String() string {
