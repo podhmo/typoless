@@ -90,3 +90,9 @@ func (Table) From(t tablelike) func(*Query) {
 		q.FromClause = From(t)
 	}
 }
+
+func (Table) OrderBy(args ...Ordering) func(*Query) {
+	return func(q *Query) {
+		q.OrderByClause = OrderBy(args...)
+	}
+}

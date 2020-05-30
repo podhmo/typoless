@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+// https://www.sqlite.org/syntaxdiagrams.html#select-stmt
+
 // for SELECT
 
 func Select(fields ...Field) *SelectClause {
@@ -67,4 +69,27 @@ func (q *WhereClause) String() string {
 
 	value := Replace(q.Value, "")
 	return fmt.Sprintf("%s %v", q.Prefix, value)
+}
+
+// for Order by
+type OrderByClause struct {
+	Prefix string
+	Args   []Ordering
+}
+
+func OrderBy(args ...Ordering) *OrderByClause {
+	return &OrderByClause{
+		Prefix: "ORDER BY",
+		Args:   args,
+	}
+}
+func (q *OrderByClause) String() string {
+	if q == nil {
+		return ""
+	}
+	buf := make([]string, len(q.Args))
+	for i := 0; i < len(q.Args); i++ {
+		buf[i] = q.Args[i].Name()
+	}
+	return q.Prefix + " " + strings.Join(buf, ", ")
 }

@@ -162,6 +162,7 @@ func run() error {
 					),
 				).As("origin"),
 			),
+			q.OrderBy(q.Desc(q.Person.ID), q.Asc(q.Person.Name)),
 		).DoWithValues(dbmap.Select, &rows)
 		if err != nil {
 			return err

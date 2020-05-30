@@ -162,6 +162,7 @@ INSERT INTO people (id, name, father_id, mother_id) VALUES (:id, :name, :father_
 					),
 				).As("origin"),
 			),
+			q.OrderBy(q.Desc(q.Person.ID), q.Asc(q.Person.Name)),
 		).Do(db.Select, &rows)
 		if err != nil {
 			return err

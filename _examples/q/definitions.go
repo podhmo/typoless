@@ -25,10 +25,16 @@ var Person = PersonDefinition{
 }
 
 var (
-	Select = Person.Select
-	From   = Person.From
-	Where  = Person.Where
-	On     = typoless.On
+	Select  = Person.Select
+	From    = Person.From
+	Where   = Person.Where
+	OrderBy = Person.OrderBy
+)
+
+var (
+	On   = typoless.On
+	Asc  = typoless.Asc
+	Desc = typoless.Desc
 )
 
 var (
