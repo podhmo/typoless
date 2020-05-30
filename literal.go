@@ -23,6 +23,6 @@ type LiteralFormat struct {
 func (v LiteralFormat) Name() string {
 	return fmt.Sprintf(v.Format, v.Args...)
 }
-func (v LiteralFormat) As(name string) As {
-	return As{Field: v, NewName: name}
+func (v LiteralFormat) As(name string) AsField {
+	return AsField{Field: v, NewName: name}
 }
