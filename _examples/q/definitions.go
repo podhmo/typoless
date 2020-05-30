@@ -33,4 +33,6 @@ var (
 
 var (
 	Literalf = typoless.Literalf
+	And      = typoless.And
+	Or       = typoless.Or
 )

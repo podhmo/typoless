@@ -155,9 +155,11 @@ func run() error {
 				q.Person.ID,
 				q.Person.Name,
 				q.Literalf(
-					"case when %s=0 AND %s=0 then 1 else 0 end",
-					q.Person.MotherID,
-					q.Person.FatherID,
+					"case when %s then 1 else 0 end",
+					q.And(
+						q.Person.MotherID.Compare("=", 0),
+						q.Person.FatherID.Compare("=", 0),
+					),
 				).As("origin"),
 			),
 		).DoWithValues(dbmap.Select, &rows)
