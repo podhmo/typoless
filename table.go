@@ -28,9 +28,9 @@ func (t Table) FullOuterJoin(rhs tablelike, on string) JoinedTable {
 }
 
 type JoinedTable struct {
+	joiner string
 	lhs    tablelike
 	rhs    tablelike
-	joiner string
 	on     string
 }
 

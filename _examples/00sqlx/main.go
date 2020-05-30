@@ -103,6 +103,42 @@ INSERT INTO people (id, name, father_id, mother_id) VALUES (:id, :name, :father_
 		}
 		log.Printf("\tgot, %#v\n", ob)
 	}
+
+	fmt.Println("-- join query ----------------------------------------")
+	{
+		type view struct {
+			ID         int64  `db:"id"`
+			Name       string `db:"name"`
+			FatherName string `db:"father_name"`
+			MotherName string `db:"mother_name"`
+		}
+
+		p := PersonD.As("p")
+		father := PersonD.As("father")
+		mother := PersonD.As("mother")
+
+		var rows []view
+		err := PersonD.Query(
+			From(
+				p.
+					Join(father, On(p.FatherID, father.ID)).
+					Join(mother, On(p.MotherID, mother.ID)),
+			),
+			Select(
+				p.ID,
+				p.Name,
+				father.Name.As("father_name"),
+				mother.Name.As("mother_name"),
+			),
+		).Do(db.Select, &rows)
+		if err != nil {
+			return err
+		}
+		log.Println("All rows:")
+		for i, ob := range rows {
+			log.Printf("    %d: %#+v\n", i, ob)
+		}
+	}
 	return nil
 }
 
@@ -153,6 +189,8 @@ var PersonD = PersonDefinition{
 }
 
 var (
-	Where  = PersonD.Where
 	Select = PersonD.Select
+	From   = PersonD.From
+	Where  = PersonD.Where
+	On     = typoless.On
 )

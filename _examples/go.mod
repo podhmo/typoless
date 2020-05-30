@@ -8,6 +8,7 @@ require (
 	github.com/podhmo/typoless v0.0.0
 	github.com/rs/zerolog v1.18.0
 	github.com/simukti/sqldb-logger v0.0.0-20200401101904-10de8322a496
+	google.golang.org/appengine v1.6.6 // indirect
 )
 
 replace github.com/podhmo/typoless => ../
