@@ -7,9 +7,11 @@ import (
 	"log"
 	"os"
 
+	"m/model"
+	"m/q"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/podhmo/typoless"
 	"github.com/rs/zerolog"
 	sqldblogger "github.com/simukti/sqldb-logger"
 	"github.com/simukti/sqldb-logger/logadapter/zerologadapter"
@@ -48,18 +50,18 @@ func run() error {
 
 	fmt.Println("-- insert ----------------------------------------")
 	{
-		people := []*Person{
-			&Person{
+		people := []*model.Person{
+			&model.Person{
 				ID:       1,
 				FatherID: 2,
 				MotherID: 3,
 				Name:     "me",
 			},
-			&Person{
+			&model.Person{
 				ID:   2,
 				Name: "F",
 			},
-			&Person{
+			&model.Person{
 				ID:   3,
 				Name: "M",
 			},
@@ -77,9 +79,9 @@ INSERT INTO people (id, name, father_id, mother_id) VALUES (:id, :name, :father_
 
 	fmt.Println("-- query all ----------------------------------------")
 	{
-		var rows []Person
-		err := PersonD.Query(
-			Select(PersonD.ID, PersonD.Name),
+		var rows []model.Person
+		err := q.Person.Query(
+			q.Select(q.Person.ID, q.Person.Name),
 		).Do(db.Select, &rows)
 		if err != nil {
 			return err
@@ -93,10 +95,10 @@ INSERT INTO people (id, name, father_id, mother_id) VALUES (:id, :name, :father_
 	fmt.Println("-- query one ----------------------------------------")
 	{
 		// TODO: limit
-		var ob Person
-		err := PersonD.Query(
-			Where(PersonD.Name.Compare("= ?", "me")),
-			Select(PersonD.ID, PersonD.Name),
+		var ob model.Person
+		err := q.Person.Query(
+			q.Where(q.Person.Name.Compare("= ?", "me")),
+			q.Select(q.Person.ID, q.Person.Name),
 		).Do(db.Get, &ob)
 		if err != nil {
 			return err
@@ -113,22 +115,50 @@ INSERT INTO people (id, name, father_id, mother_id) VALUES (:id, :name, :father_
 			MotherName string `db:"mother_name"`
 		}
 
-		p := PersonD.As("p")
-		father := PersonD.As("father")
-		mother := PersonD.As("mother")
+		p := q.Person.As("p")
+		father := q.Person.As("father")
+		mother := q.Person.As("mother")
 
 		var rows []view
-		err := PersonD.Query(
-			From(
+		err := q.Person.Query(
+			q.From(
 				p.
-					Join(father, On(p.FatherID, father.ID)).
-					Join(mother, On(p.MotherID, mother.ID)),
+					Join(father, q.On(p.FatherID, father.ID)).
+					Join(mother, q.On(p.MotherID, mother.ID)),
 			),
-			Select(
+			q.Select(
 				p.ID,
 				p.Name,
 				father.Name.As("father_name"),
 				mother.Name.As("mother_name"),
+			),
+		).Do(db.Select, &rows)
+		if err != nil {
+			return err
+		}
+		log.Println("All rows:")
+		for i, ob := range rows {
+			log.Printf("    %d: %#+v\n", i, ob)
+		}
+	}
+
+	fmt.Println("-- with literalf ----------------------------------------")
+	{
+		type result struct {
+			ID     int64  `db:"id"`
+			Name   string `db:"name"`
+			Origin bool   `db:"origin"`
+		}
+		var rows []result
+		err := q.Person.Query(
+			q.Select(
+				q.Person.ID,
+				q.Person.Name,
+				q.Literalf(
+					"case when %s=0 AND %s=0 then 1 else 0 end",
+					q.Person.MotherID,
+					q.Person.FatherID,
+				).As("origin"),
 			),
 		).Do(db.Select, &rows)
 		if err != nil {
@@ -150,13 +180,6 @@ func main() {
 	}
 }
 
-type Person struct {
-	ID       int64  `db:"id"`
-	FatherID int64  `db:"father_id"` // todo nullable
-	MotherID int64  `db:"mother_id"` // todo nullable
-	Name     string `db:"name"`
-}
-
 var _schema = `
 CREATE TABLE people (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -165,32 +188,3 @@ CREATE TABLE people (
   name TEXT
 );
 `
-
-type PersonDefinition struct {
-	typoless.Table
-	ID       typoless.Int64Field
-	FatherID typoless.Int64Field
-	MotherID typoless.Int64Field
-	Name     typoless.StringField
-}
-
-func (d *PersonDefinition) As(name string) *PersonDefinition {
-	new := *d
-	typoless.Alias(&new, d, name)
-	return &new
-}
-
-var PersonD = PersonDefinition{
-	Table:    typoless.Table("people"),
-	ID:       typoless.Int64Field("id"),
-	FatherID: typoless.Int64Field("father_id"),
-	MotherID: typoless.Int64Field("mother_id"),
-	Name:     typoless.StringField("name"),
-}
-
-var (
-	Select = PersonD.Select
-	From   = PersonD.From
-	Where  = PersonD.Where
-	On     = typoless.On
-)

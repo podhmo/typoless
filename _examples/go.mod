@@ -3,6 +3,7 @@ module m
 go 1.14
 
 require (
+	github.com/go-gorp/gorp/v3 v3.0.2
 	github.com/jmoiron/sqlx v1.2.1-0.20190826204134-d7d95172beb5
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/podhmo/typoless v0.0.0
